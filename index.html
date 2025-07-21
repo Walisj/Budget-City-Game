@@ -70,6 +70,10 @@
 
   <button onclick="finishPlanning()" style="padding: 10px 20px; font-size: 1em;">Done Planning</button>
 
+  <button onclick="resetPlanning()" style="padding: 10px 20px; font-size: 1em; margin-left: 10px; background-color: #f44336; color: white;">
+  🗑️ Clear My Choices
+</button>
+
   <div class="result" id="result"></div>
 
   <script>
@@ -140,6 +144,17 @@
     }
 
     function finishPlanning() {
+
+      function resetPlanning() {
+  budget = 100;
+  selectedBuildings = [];
+  document.getElementById("cityView").innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
+  document.getElementById("result").innerText = "";
+  document.getElementById("budget").innerText = lang === 'en'
+    ? `Remaining Budget: RM${budget} million`
+    : `Baki Bajet: RM${budget} juta`;
+}
+
       let msg = "";
       const spent = 100 - budget;
 
