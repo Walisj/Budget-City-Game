@@ -136,19 +136,9 @@
   </button>
 </div>
 
-<!-- Hidden Teacher Reset Button -->
-<div style="margin-top: 10px;">
-  <!-- 🔒 Invisible clickable dot (teacher secret trigger) -->
-  <span onclick="document.getElementById('resetButton').style.display='inline-block'; this.style.display='none';"
-        style="font-size: 12px; cursor: pointer; color: transparent; user-select: none;">
-    •
-  </span>
-
-  <!-- 🧹 The actual hidden reset button -->
-  <button id="resetButton" style="display: none;" onclick="localStorage.removeItem('leaderboard'); alert('Leaderboard cleared!'); location.reload();">
-    🧹 Clear Leaderboard
-  </button>
-</div>
+<p onclick="document.getElementById('resetButton').style.display='inline-block'; this.style.display='none';" style="cursor: pointer; font-size: 20px;">
+  👨‍🏫 (Teacher Only)
+</p>
 
 
 
