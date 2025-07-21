@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Build Your Budget City</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f8ff;
+      padding: 20px;
+      text-align: center;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    section {
+      display: none;
+      max-width: 800px;
+      margin: auto;
+    }
+    section.active {
+      display: block;
+    }
+    .button-container, .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .button-container button, .actions button {
+      padding: 10px 15px;
+      font-size: 0.9em;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    .building {
+      background-color: #3498db;
+      color: white;
+    }
+    .building:disabled {
+      background-color: #aaa;
+    }
+    .next, .back {
+      background: #2980b9;
+      color: white;
+    }
+    .finish-btn { background: #2ecc71; color: white; }
+    .reset-btn { background: #e74c3c; color: white; }
+    .city-view {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      min-height: 100px;
+    }
+    .city-view img {
+      width: 64px;
+      height: 64px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .summary-categories {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .leaderboard {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <section id="language" class="active">
+    <h1>🌍 Choose Your Language / Pilih Bahasa Anda</h1>
+    <button class="next" onclick="setLanguage('en')">🇬🇧 English</button>
+    <button class="next" onclick="setLanguage('ms')">🇲🇾 Bahasa Melayu</button>
+  </section>
+
+  <section id="intro">
+    <h1></h1>
+    <p></p>
+    <button class="next" onclick="showSection('game')"></button>
+  </section>
+
+  <section id="game">
+    <h2></h2>
+    <div>💰 <span id="budget-label"></span>: RM <span id="budget">100</span> million</div>
+    <div class="button-container" id="buttons"></div>
+    <div class="city-view" id="cityView"></div>
+
+    <div style="margin-top: 20px;">
+      <label for="username"><strong id="name-label"></strong></label><br>
+      <input type="text" id="username" placeholder="Your name here" style="padding: 6px; font-size: 1em;" />
+    </div>
+
+    <div class="actions">
+      <button class="back" onclick="showSection('intro')"></button>
+      <button class="finish-btn" onclick="finishGame()"></button>
+    </div>
+  </section>
+
+  <section id="result">
+    <h2></h2>
+    <div id="summaryText"></div>
+    <div class="summary-categories">
+      <div>😊 Happiness: <span id="happiness">0</span></div>
+      <div>🛡️ Safety: <span id="safety">0</span></div>
+      <div>💼 Economy: <span id="economy">0</span></div>
+      <div>🌱 Sustainability: <span id="sustainability">0</span></div>
+    </div>
+
+    <div class="leaderboard">
+      <h3></h3>
+      <ol id="leaderboardList"></ol>
+      <p id="yourRank" style="font-weight: bold; color: #27ae60;"></p>
+    </div>
+<div>
+  <button onclick="localStorage.removeItem('leaderboard'); alert('Leaderboard cleared!');">
+    🧹 Clear Leaderboard
+  </button>
+</div>
+
+<!-- Hidden Teacher Reset Button -->
+<div>
+  <!-- Hidden trigger (teachers click this emoji to reveal the button) -->
+  <p style="cursor:pointer; font-size: 20px;" onclick="document.getElementById('resetButton').style.display='inline-block';">
+    👀
+  </p>
+
+  <!-- Actual button (hidden by default) -->
+  <button id="resetButton" style="display: none;" onclick="localStorage.removeItem('leaderboard'); alert('Leaderboard cleared!');">
+    🧹 Clear Leaderboard
+  </button>
+</div>
+
+
+    <div class="actions">
+      <button class="back" onclick="showSection('game')"></button>
+      <button class="reset-btn" onclick="resetGame()"></button>
+    </div>
+  </section>
+
+  <script>
+    let currentLang = 'en';
+    const translations = {
+      en: {
+        title: "🏗️ Build Your Budget City",
+        description: "You have RM100 million to build a city that balances happiness, safety, economy, and sustainability.",
+        start: "➡️ Start Building",
+        budget: "Budget Left",
+        enterName: "🧑 Enter Your Name:",
+        back: "⬅️ Back",
+        finish: "✅ Finish Planning",
+        summary: "📋 City Summary",
+        edit: "🔧 Edit Plan",
+        reset: "🔁 Start Over",
+        leaderboard: "🏆 Local Leaderboard",
+        noCity: "No buildings yet.",
+        excellent: "✅ Excellent planning! You balanced all categories well.",
+        decent: "👍 Decent planning. Some areas can improve.",
+        poor: "⚠️ Poor city planning. Try a different strategy.",
+        fail: "❌ Overbudget! You fail as a QS.",
+        yourRank: "🏅 You are ranked",
+        notTop: "You didn’t make the top 3 this round.",
+      },
+      ms: {
+        title: "🏗️ Bina Bandar Bajet Anda",
+        description: "Anda mempunyai RM100 juta untuk membina bandar yang seimbang antara kebahagiaan, keselamatan, ekonomi dan kelestarian.",
+        start: "➡️ Mula Bina",
+        budget: "Bajet Baki",
+        enterName: "🧑 Masukkan Nama Anda:",
+        back: "⬅️ Kembali",
+        finish: "✅ Selesai Merancang",
+        summary: "📋 Rumusan Bandar",
+        edit: "🔧 Ubah Pelan",
+        reset: "🔁 Mula Semula",
+        leaderboard: "🏆 Papan Pendahulu",
+        noCity: "Belum ada bangunan.",
+        excellent: "✅ Perancangan cemerlang! Anda seimbangkan semua kategori.",
+        decent: "👍 Perancangan sederhana. Ada ruang untuk penambahbaikan.",
+        poor: "⚠️ Perancangan kurang baik. Cuba strategi lain.",
+        fail: "❌ Bajet melebihi! Anda gagal sebagai Juruukur Bahan.",
+        yourRank: "🏅 Anda berada di tangga ke",
+        notTop: "Anda tidak berada dalam 3 teratas kali ini.",
+      }
+    };
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      showSection("intro");
+      updateLang();
+    }
+
+    function updateLang() {
+      const t = translations[currentLang];
+      document.querySelector("#intro h1").textContent = t.title;
+      document.querySelector("#intro p").textContent = t.description;
+      document.querySelector("#intro .next").textContent = t.start;
+      document.querySelector("#game h2").textContent = t.title;
+      document.getElementById("budget-label").textContent = t.budget;
+      document.getElementById("name-label").textContent = t.enterName;
+      document.querySelector("#game .back").textContent = t.back;
+      document.querySelector(".finish-btn").textContent = t.finish;
+      document.querySelector("#result h2").textContent = t.summary;
+      document.querySelector("#result .back").textContent = t.edit;
+      document.querySelector(".reset-btn").textContent = t.reset;
+      document.querySelector(".leaderboard h3").textContent = t.leaderboard;
+      document.getElementById("cityView").textContent = t.noCity;
+    }
+
+    let budget = 100;
+    let buildingsChosen = [];
+    let score = 0;
+    let categories = { happiness: 0, safety: 0, economy: 0, sustainability: 0 };
+
+    const buildings = [
+      { name: "🏫 School", cost: 20, img: "https://cdn-icons-png.flaticon.com/512/3159/3159066.png", cat: { happiness: 10 }},
+      { name: "🏥 Hospital", cost: 25, img: "https://cdn-icons-png.flaticon.com/512/2965/2965567.png", cat: { happiness: 8, safety: 7 }},
+      { name: "🏭 Factory", cost: 15, img: "https://cdn-icons-png.flaticon.com/512/2717/2717259.png", cat: { economy: 20 }},
+      { name: "🌳 Park", cost: 10, img: "https://cdn-icons-png.flaticon.com/512/4275/4275497.png", cat: { happiness: 5 }},
+      { name: "🛣️ Highway", cost: 30, img: "https://cdn-icons-png.flaticon.com/512/854/854878.png", cat: { economy: 5 }},
+      { name: "🛍️ Mall", cost: 20, img: "https://cdn-icons-png.flaticon.com/512/2972/2972501.png", cat: { economy: 15, happiness: 5 }},
+      { name: "🚓 Police", cost: 15, img: "https://cdn-icons-png.flaticon.com/512/3050/3050047.png", cat: { safety: 15 }},
+      { name: "📚 Library", cost: 10, img: "https://cdn-icons-png.flaticon.com/512/2893/2893811.png", cat: { happiness: 5 }},
+      { name: "🏟️ Stadium", cost: 25, img: "https://cdn-icons-png.flaticon.com/512/3448/3448925.png", cat: { happiness: 10 }},
+      { name: "🏢 Apartments", cost: 20, img: "https://cdn-icons-png.flaticon.com/512/235/235861.png", cat: { economy: 10 }},
+      { name: "🔋 Solar Farm", cost: 15, img: "https://cdn-icons-png.flaticon.com/512/2942/2942115.png", cat: { sustainability: 15 }},
+      { name: "🗑️ Waste Plant", cost: 20, img: "https://cdn-icons-png.flaticon.com/512/918/918851.png", cat: { sustainability: 10 }}
+    ];
+
+    const buttonsContainer = document.getElementById("buttons");
+
+    buildings.forEach((b) => {
+      const btn = document.createElement("button");
+      btn.textContent = `${b.name} (RM${b.cost}M)`;
+      btn.className = "building";
+      btn.onclick = () => buildBuilding(b, btn);
+      buttonsContainer.appendChild(btn);
+    });
+
+    function buildBuilding(b, btn) {
+      if (budget >= b.cost) {
+        budget -= b.cost;
+        buildingsChosen.push(b.name);
+        for (let cat in b.cat) categories[cat] += b.cat[cat];
+        document.getElementById("budget").textContent = budget;
+
+        const img = document.createElement("img");
+        img.src = b.img;
+        img.alt = b.name;
+        const city = document.getElementById("cityView");
+if (city.textContent.includes("Belum ada") || city.textContent.includes("No buildings")) {
+  city.innerHTML = ""; // clear the message
+}
+city.appendChild(img);
+
+        btn.disabled = true;
+      } else {
+        alert("Insufficient budget!");
+      }
+    }
+
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function finishGame() {
+      const name = document.getElementById("username").value.trim();
+      if (!name) {
+        alert("Please enter your name before finishing!");
+        return;
+      }
+
+      score = categories.happiness + categories.safety + categories.economy + categories.sustainability;
+
+      document.getElementById("happiness").textContent = categories.happiness;
+      document.getElementById("safety").textContent = categories.safety;
+      document.getElementById("economy").textContent = categories.economy;
+      document.getElementById("sustainability").textContent = categories.sustainability;
+
+      const t = translations[currentLang];
+      let summary = `<p><strong>Total Score:</strong> ${score}</p>`;
+      if (budget < 0) summary += `<p>${t.fail}</p>`;
+      else if (score >= 60) summary += `<p>${t.excellent}</p>`;
+      else if (score >= 40) summary += `<p>${t.decent}</p>`;
+      else summary += `<p>${t.poor}</p>`;
+
+      document.getElementById("summaryText").innerHTML = summary;
+      updateLeaderboard(name, score);
+      showSection("result");
+    }
+
+    function updateLeaderboard(name, newScore) {
+      const scores = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+      scores.push({ name, score: newScore });
+      scores.sort((a, b) => b.score - a.score);
+      const top3 = scores.slice(0, 3);
+      localStorage.setItem("leaderboard", JSON.stringify(top3));
+
+      const list = document.getElementById("leaderboardList");
+      list.innerHTML = "";
+      let yourRankText = "";
+
+      top3.forEach((entry, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${entry.name} – ${entry.score} pts`;
+        list.appendChild(li);
+        if (entry.name === name && entry.score === newScore && yourRankText === "") {
+          yourRankText = `${translations[currentLang].yourRank} #${index + 1}!`;
+        }
+      });
+
+      document.getElementById("yourRank").textContent = yourRankText || translations[currentLang].notTop;
+    }
+
+    function resetGame() {
+      budget = 100;
+      score = 0;
+      categories = { happiness: 0, safety: 0, economy: 0, sustainability: 0 };
+      buildingsChosen = [];
+      document.getElementById("budget").textContent = budget;
+      document.getElementById("cityView").innerHTML = translations[currentLang].noCity;
+      document.getElementById("summaryText").innerHTML = "";
+      document.getElementById("username").value = "";
+      document.querySelectorAll(".building").forEach(btn => btn.disabled = false);
+      showSection("intro");
+      updateLang();
+    }
+  </script>
+</body>
+</html>
