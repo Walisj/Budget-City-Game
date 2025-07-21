@@ -169,15 +169,24 @@
       document.getElementById("result").innerText = msg;
     }
 
-    function resetPlanning() {
-      budget = 100;
-      selectedBuildings = [];
-      document.getElementById("cityView").innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
-      document.getElementById("result").innerText = "";
-      document.getElementById("budget").innerText = lang === 'en'
-        ? `Remaining Budget: RM${budget} million`
-        : `Baki Bajet: RM${budget} juta`;
-    }
+   function resetPlanning() {
+  budget = 100;
+  selectedBuildings = [];
+  document.getElementById("result").innerText = "";
+
+  // Reset city view
+  const city = document.getElementById("cityView");
+  city.innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
+
+  // Update budget display
+  document.getElementById("budget").innerText = lang === 'en'
+    ? `Remaining Budget: RM${budget} million`
+    : `Baki Bajet: RM${budget} juta`;
+
+  // Redraw the building choices
+  showBuildings();
+}
+
 
     // Initialize page
     setLanguage('en');
