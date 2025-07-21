@@ -48,6 +48,10 @@
       top: 10px;
       right: 10px;
     }
+    button {
+      cursor: pointer;
+      margin: 5px;
+    }
   </style>
 </head>
 <body>
@@ -62,17 +66,14 @@
 
   <div id="budget">Remaining Budget: RM100 million</div>
 
-  <div id="buildingChoices">
-    <!-- Buildings will appear here -->
-  </div>
+  <div id="buildingChoices"></div>
 
   <div id="cityView"><i id="placeholder">No buildings yet.</i></div>
 
-  <button onclick="finishPlanning()" style="padding: 10px 20px; font-size: 1em;">Done Planning</button>
-
+  <button onclick="finishPlanning()" style="padding: 10px 20px; font-size: 1em;">✅ Done Planning</button>
   <button onclick="resetPlanning()" style="padding: 10px 20px; font-size: 1em; margin-left: 10px; background-color: #f44336; color: white;">
-  🗑️ Clear My Choices
-</button>
+    🗑️ Clear My Choices
+  </button>
 
   <div class="result" id="result"></div>
 
@@ -144,17 +145,6 @@
     }
 
     function finishPlanning() {
-
-      function resetPlanning() {
-  budget = 100;
-  selectedBuildings = [];
-  document.getElementById("cityView").innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
-  document.getElementById("result").innerText = "";
-  document.getElementById("budget").innerText = lang === 'en'
-    ? `Remaining Budget: RM${budget} million`
-    : `Baki Bajet: RM${budget} juta`;
-}
-
       let msg = "";
       const spent = 100 - budget;
 
@@ -179,7 +169,17 @@
       document.getElementById("result").innerText = msg;
     }
 
-    // Init
+    function resetPlanning() {
+      budget = 100;
+      selectedBuildings = [];
+      document.getElementById("cityView").innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
+      document.getElementById("result").innerText = "";
+      document.getElementById("budget").innerText = lang === 'en'
+        ? `Remaining Budget: RM${budget} million`
+        : `Baki Bajet: RM${budget} juta`;
+    }
+
+    // Initialize page
     setLanguage('en');
   </script>
 
