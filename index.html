@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Build Your Budget City</title>
   <style>
@@ -26,17 +26,17 @@
     .building-option:hover {
       background: #e0f7fa;
     }
-    .building-option img {
-      width: 60px;
-      height: 60px;
-    }
     #cityView {
-      margin: 20px 0;
+      margin: 20px auto;
       min-height: 100px;
       padding: 10px;
       background: #fff;
       border: 2px dashed #ccc;
       border-radius: 10px;
+      max-width: 500px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     .result {
       font-weight: bold;
@@ -51,6 +51,14 @@
     button {
       cursor: pointer;
       margin: 5px;
+    }
+    .animated-building {
+      animation: zoomIn 0.3s ease;
+      margin: 5px;
+    }
+    @keyframes zoomIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
@@ -71,7 +79,7 @@
   <div id="cityView"><i id="placeholder">No buildings yet.</i></div>
 
   <button onclick="finishPlanning()" style="padding: 10px 20px; font-size: 1em;">✅ Done Planning</button>
-  <button onclick="resetPlanning()" style="padding: 10px 20px; font-size: 1em; margin-left: 10px; background-color: #f44336; color: white;">
+  <button onclick="resetPlanning()" style="padding: 10px 20px; font-size: 1em; background-color: #f44336; color: white;">
     🗑️ Clear My Choices
   </button>
 
@@ -79,14 +87,14 @@
 
   <script>
     const buildings = [
-      { name: { en: "School", ms: "Sekolah" }, cost: 30, img: "🏫" },
-      { name: { en: "Hospital", ms: "Hospital" }, cost: 40, img: "🏥" },
-      { name: { en: "Park", ms: "Taman" }, cost: 10, img: "🌳" },
-      { name: { en: "Mall", ms: "Pusat Beli-Belah" }, cost: 35, img: "🏬" },
-      { name: { en: "Police Station", ms: "Balai Polis" }, cost: 20, img: "👮‍♂️" },
-      { name: { en: "Fire Station", ms: "Balai Bomba" }, cost: 25, img: "🚒" },
-      { name: { en: "Library", ms: "Perpustakaan" }, cost: 15, img: "📚" },
-      { name: { en: "Playground", ms: "Taman Permainan" }, cost: 10, img: "🛝" }
+      { name: { en: "School", ms: "Sekolah" }, baseCost: 15, img: "🏫" },
+      { name: { en: "Hospital", ms: "Hospital" }, baseCost: 20, img: "🏥" },
+      { name: { en: "Park", ms: "Taman" }, baseCost: 5, img: "🌳" },
+      { name: { en: "Mall", ms: "Pusat Beli-Belah" }, baseCost: 18, img: "🏬" },
+      { name: { en: "Police Station", ms: "Balai Polis" }, baseCost: 10, img: "👮‍♂️" },
+      { name: { en: "Fire Station", ms: "Balai Bomba" }, baseCost: 12, img: "🚒" },
+      { name: { en: "Library", ms: "Perpustakaan" }, baseCost: 8, img: "📚" },
+      { name: { en: "Playground", ms: "Taman Permainan" }, baseCost: 5, img: "🛝" }
     ];
 
     let selectedBuildings = [];
@@ -114,20 +122,49 @@
       buildings.forEach((b, i) => {
         const div = document.createElement("div");
         div.className = "building-option";
-        div.innerHTML = `<div>${b.img}</div><div>${b.name[lang]}</div><div>RM${b.cost}M</div>`;
-        div.onclick = () => buildBuilding(i);
+        div.innerHTML = `<div>${b.img}</div><div>${b.name[lang]}</div>`;
+        div.onclick = () => chooseSize(i);
         container.appendChild(div);
       });
     }
 
-    function buildBuilding(index) {
-      const b = buildings[index];
-      if (budget < b.cost) {
+    function chooseSize(index) {
+      const sizes = {
+        small: { multiplier: 1, label: lang === 'en' ? 'Small' : 'Kecil' },
+        medium: { multiplier: 2, label: lang === 'en' ? 'Medium' : 'Sederhana' },
+        large: { multiplier: 3, label: lang === 'en' ? 'Large' : 'Besar' }
+      };
+
+      let options = "";
+      for (let key in sizes) {
+        const cost = buildings[index].baseCost * sizes[key].multiplier;
+        options += `${sizes[key].label} (RM${cost}M)\n`;
+      }
+
+      const choice = prompt(`${lang === 'en' ? 'Choose building size:' : 'Pilih saiz bangunan:'}\n\n${options}`);
+      if (!choice) return;
+
+      let selectedSize = null;
+      for (let key in sizes) {
+        if (choice.toLowerCase().includes(sizes[key].label.toLowerCase())) {
+          selectedSize = key;
+          break;
+        }
+      }
+
+      if (!selectedSize) {
+        alert(lang === 'en' ? 'Invalid choice.' : 'Pilihan tidak sah.');
+        return;
+      }
+
+      const cost = buildings[index].baseCost * sizes[selectedSize].multiplier;
+      if (budget < cost) {
         alert(lang === 'en' ? "Not enough budget!" : "Bajet tidak mencukupi!");
         return;
       }
-      budget -= b.cost;
-      selectedBuildings.push(b);
+
+      budget -= cost;
+      selectedBuildings.push({ ...buildings[index], size: selectedSize, cost });
 
       document.getElementById("budget").innerText = lang === 'en'
         ? `Remaining Budget: RM${budget} million`
@@ -137,11 +174,13 @@
       if (city.textContent.includes("No buildings") || city.textContent.includes("Belum ada")) {
         city.innerHTML = "";
       }
-      const img = document.createElement("span");
-      img.textContent = b.img;
-      img.style.fontSize = "40px";
-      img.style.margin = "5px";
-      city.appendChild(img);
+
+      const span = document.createElement("span");
+      span.textContent = buildings[index].img;
+      span.className = "animated-building";
+      span.style.fontSize = selectedSize === 'small' ? "30px" :
+                            selectedSize === 'medium' ? "45px" : "60px";
+      city.appendChild(span);
     }
 
     function finishPlanning() {
@@ -169,26 +208,22 @@
       document.getElementById("result").innerText = msg;
     }
 
-   function resetPlanning() {
-  budget = 100;
-  selectedBuildings = [];
-  document.getElementById("result").innerText = "";
+    function resetPlanning() {
+      budget = 100;
+      selectedBuildings = [];
+      document.getElementById("result").innerText = "";
 
-  // Reset city view
-  const city = document.getElementById("cityView");
-  city.innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
+      const city = document.getElementById("cityView");
+      city.innerHTML = `<i id="placeholder">${lang === 'en' ? "No buildings yet." : "Belum ada bangunan."}</i>`;
 
-  // Update budget display
-  document.getElementById("budget").innerText = lang === 'en'
-    ? `Remaining Budget: RM${budget} million`
-    : `Baki Bajet: RM${budget} juta`;
+      document.getElementById("budget").innerText = lang === 'en'
+        ? `Remaining Budget: RM${budget} million`
+        : `Baki Bajet: RM${budget} juta`;
 
-  // Redraw the building choices
-  showBuildings();
-}
+      showBuildings();
+    }
 
-
-    // Initialize page
+    // Init
     setLanguage('en');
   </script>
 
