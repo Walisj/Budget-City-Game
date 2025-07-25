@@ -7,233 +7,196 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      padding: 20px;
       text-align: center;
+      background: #eef4f8;
+      padding: 20px;
     }
     h1 {
       font-size: 2em;
     }
-    .lang-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-    button {
-      cursor: pointer;
-      margin: 5px;
-      padding: 10px 15px;
-    }
-    #budget {
-      font-size: 1.2em;
-      margin: 10px;
-    }
-    #buildingChoices {
-      margin-top: 15px;
-    }
     .building-option {
       display: inline-block;
+      margin: 10px;
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 10px;
-      margin: 8px;
-      width: 100px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .building-option:hover {
+      transform: scale(1.05);
     }
     .building-option img {
       width: 60px;
       height: 60px;
+      object-fit: contain;
     }
-    #cityMap {
-      position: relative;
-      width: 600px;
+    #cityView {
+      background: url('https://i.imgur.com/upOHde0.png') center/cover no-repeat;
+      width: 90%;
       height: 400px;
       margin: 20px auto;
-      background-image: url('https://drive.google.com/uc?export=download&id=1DJcR5B0ONeELM6nu962tV0dzviDzdVF-');
-      background-size: cover;
-      border: 2px solid #ccc;
-      border-radius: 12px;
+      border-radius: 10px;
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
     }
     .building-img {
-      position: absolute;
-      transition: transform 0.3s ease;
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      margin: 5px;
     }
     .result {
       font-weight: bold;
       font-size: 1.2em;
       margin-top: 15px;
     }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .done {
+      background-color: #4caf50;
+      color: white;
+    }
+    .clear {
+      background-color: #f44336;
+      color: white;
+    }
+    .lang-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
   </style>
 </head>
 <body>
 
-<div class="lang-btn">
-  <button onclick="setLanguage('en')">English</button>
-  <button onclick="setLanguage('ms')">BM</button>
-</div>
+  <div class="lang-btn">
+    <button onclick="setLanguage('en')">English</button>
+    <button onclick="setLanguage('ms')">BM</button>
+  </div>
 
-<h1 id="title">Build Your Budget City</h1>
-<p id="intro">You have RM100 million. Choose wisely to develop your city!</p>
-<div id="budget">Remaining Budget: RM100 million</div>
+  <h1 id="title">Build Your Budget City</h1>
+  <p id="intro">You have RM100 million. Choose wisely to develop your city!</p>
+  <div id="budget">Remaining Budget: RM100 million</div>
 
-<div id="buildingChoices"></div>
+  <div id="buildingChoices"></div>
 
-<div id="cityMap" id="cityView"></div>
+  <div id="cityView"></div>
 
-<button onclick="finishPlanning()">✅ Done Planning</button>
-<button onclick="resetPlanning()" style="background-color: #f44336; color: white;">🗑️ Clear My Choices</button>
+  <button class="done" onclick="finishPlanning()">✅ Done Planning</button>
+  <button class="clear" onclick="resetPlanning()">🗑️ Clear My Choices</button>
 
-<div class="result" id="result"></div>
+  <div class="result" id="result"></div>
 
-<script>
-const buildings = [
-  { name: { en: "School", ms: "Sekolah" }, baseCost: 15, img: "https://drive.google.com/uc?export=download&id=123o4Z0JEHZ7RY0Ck-QS096_LNR1PaVHW" },
-  { name: { en: "Hospital", ms: "Hospital" }, baseCost: 20, img: "https://drive.google.com/uc?export=download&id=1UFdy-fCiPliRnsbuBDKzP4JhpjIMZajD" },
-  { name: { en: "Park", ms: "Taman" }, baseCost: 5, img: "https://drive.google.com/uc?export=download&id=1BfYWH5vEtb7ZEHrY21DoEm1j3kEGGT7I" },
-  { name: { en: "Mall", ms: "Pusat Beli-Belah" }, baseCost: 18, img: "https://drive.google.com/uc?export=download&id=1Oy94c0BvSCrpO8fdhrV-P1zRDBKOlCe2" },
-  { name: { en: "Police Station", ms: "Balai Polis" }, baseCost: 10, img: "https://drive.google.com/uc?export=download&id=1trVBPh9Obf5fyS-rhgf-Dm2vgFfuI14r" },
-  { name: { en: "Fire Station", ms: "Balai Bomba" }, baseCost: 12, img: "https://drive.google.com/uc?export=download&id=1NE2-LL13wMEI9fpjxcGdHP_51JEVRxVm" },
-  { name: { en: "Library", ms: "Perpustakaan" }, baseCost: 8, img: "https://drive.google.com/uc?export=download&id=1t5T5mha-JHBHUzfvwP77wPMJ7KDXPiNi" },
-  { name: { en: "Playground", ms: "Taman Permainan" }, baseCost: 5, img: "https://drive.google.com/uc?export=download&id=1ch8H0M0G5CWO43dkaJbrU2-Q0ZHbO4sE" }
-];
+  <script>
+    const buildings = [
+      { name: { en: "School", ms: "Sekolah" }, cost: 30, img: "https://i.imgur.com/D55hAJ5.gif" },
+      { name: { en: "Hospital", ms: "Hospital" }, cost: 40, img: "https://i.imgur.com/hFGTjUw.gif" },
+      { name: { en: "Park", ms: "Taman" }, cost: 10, img: "https://i.imgur.com/aopODtG.png" },
+      { name: { en: "Mall", ms: "Pusat Beli-Belah" }, cost: 35, img: "https://i.imgur.com/MbExT3H.png" },
+      { name: { en: "Police Station", ms: "Balai Polis" }, cost: 20, img: "https://i.imgur.com/SWMbTes.png" },
+      { name: { en: "Fire Station", ms: "Balai Bomba" }, cost: 25, img: "https://i.imgur.com/YKY1FXd.gif" },
+      { name: { en: "Library", ms: "Perpustakaan" }, cost: 15, img: "https://i.imgur.com/iOMz7mW.gif" },
+      { name: { en: "Playground", ms: "Taman Permainan" }, cost: 10, img: "https://i.imgur.com/uzmc9IE.gif" }
+    ];
 
-const positions = {
-  "top-left": { top: "20px", left: "20px" },
-  "top-right": { top: "20px", right: "20px" },
-  "center": { top: "160px", left: "260px" },
-  "bottom-left": { bottom: "20px", left: "20px" },
-  "bottom-right": { bottom: "20px", right: "20px" }
-};
+    let selectedBuildings = [];
+    let budget = 100;
+    let lang = 'en';
 
-let usedPositions = {};
-let selectedBuildings = [];
-let budget = 100;
-let lang = "en";
+    function setLanguage(l) {
+      lang = l;
+      document.getElementById("title").innerText = l === 'en' ? "Build Your Budget City" : "Bina Bandar Bajet Anda";
+      document.getElementById("intro").innerText = l === 'en'
+        ? "You have RM100 million. Choose wisely to develop your city!"
+        : "Anda ada RM100 juta. Pilih dengan bijak untuk bangunkan bandar anda!";
+      document.getElementById("budget").innerText = l === 'en'
+        ? `Remaining Budget: RM${budget} million`
+        : `Baki Bajet: RM${budget} juta`;
+      document.getElementById("result").innerText = "";
+      renderBuildings();
+    }
 
-function setLanguage(l) {
-  lang = l;
-  document.getElementById("title").innerText = l === 'en' ? "Build Your Budget City" : "Bina Bandar Bajet Anda";
-  document.getElementById("intro").innerText = l === 'en'
-    ? "You have RM100 million. Choose wisely to develop your city!"
-    : "Anda ada RM100 juta. Pilih dengan bijak untuk bangunkan bandar anda!";
-  updateBudgetText();
-  showBuildings();
-}
+    function renderBuildings() {
+      const container = document.getElementById("buildingChoices");
+      container.innerHTML = "";
+      buildings.forEach((b, i) => {
+        const div = document.createElement("div");
+        div.className = "building-option";
+        div.innerHTML = `<img src="${b.img}" alt="${b.name[lang]}"/><div>${b.name[lang]}</div><div>RM${b.cost}M</div>`;
+        div.onclick = () => addBuilding(i);
+        container.appendChild(div);
+      });
+    }
 
-function updateBudgetText() {
-  document.getElementById("budget").innerText =
-    lang === 'en' ? `Remaining Budget: RM${budget} million` : `Baki Bajet: RM${budget} juta`;
-}
+    function addBuilding(index) {
+      const b = buildings[index];
+      if (budget < b.cost) {
+        alert(lang === 'en' ? "Not enough budget :/" : "Bajet tidak mencukupi :/");
+        return;
+      }
+      budget -= b.cost;
+      selectedBuildings.push(b);
 
-function showBuildings() {
-  const container = document.getElementById("buildingChoices");
-  container.innerHTML = "";
-  buildings.forEach((b, i) => {
-    const div = document.createElement("div");
-    div.className = "building-option";
-    div.innerHTML = `<img src="${b.img}" alt="${b.name[lang]}"><div>${b.name[lang]}</div>`;
-    div.onclick = () => chooseSize(i);
-    container.appendChild(div);
-  });
-}
+      const city = document.getElementById("cityView");
+      const img = document.createElement("img");
+      img.src = b.img;
+      img.alt = b.name[lang];
+      img.className = "building-img";
+      city.appendChild(img);
 
-function chooseSize(index) {
-  const sizes = {
-    small: 1,
-    medium: 2,
-    large: 3
-  };
+      document.getElementById("budget").innerText = lang === 'en'
+        ? `Remaining Budget: RM${budget} million`
+        : `Baki Bajet: RM${budget} juta`;
+    }
 
-  const sizePrompt = lang === 'en'
-    ? "Choose building size: (small, medium, large)"
-    : "Pilih saiz bangunan: (kecil, sederhana, besar)";
-  let size = prompt(sizePrompt)?.toLowerCase();
+    function finishPlanning() {
+      const spent = 100 - budget;
+      let msg = "";
+      if (budget < 0) {
+        msg = lang === 'en'
+          ? "You overspent! You fail as a Quantity Surveyor :("
+          : "Anda terlebih bajet! Anda gagal sebagai Juruukur Bahan :(";
+      } else if (budget <= 10) {
+        msg = lang === 'en'
+          ? `You spent RM${spent} million. Efficient planning :D`
+          : `Anda telah membelanjakan RM${spent} juta. Perancangan yang cekap :D`;
+      } else if (budget <= 30) {
+        msg = lang === 'en'
+          ? `You spent RM${spent} million. Great planning :)`
+          : `Anda telah membelanjakan RM${spent} juta. Perancangan yang hebat :)`;
+      } else {
+        msg = lang === 'en'
+          ? `You only used RM${spent} million. You could build more :O`
+          : `Anda hanya menggunakan RM${spent} juta. Anda boleh bina lebih banyak :O`;
+      }
+      document.getElementById("result").innerText = msg;
+    }
 
-  let sizeKey = null;
-  if (["small", "kecil"].includes(size)) sizeKey = "small";
-  if (["medium", "sederhana"].includes(size)) sizeKey = "medium";
-  if (["large", "besar"].includes(size)) sizeKey = "large";
+    function resetPlanning() {
+      selectedBuildings = [];
+      budget = 100;
+      document.getElementById("result").innerText = "";
+      document.getElementById("budget").innerText = lang === 'en'
+        ? `Remaining Budget: RM${budget} million`
+        : `Baki Bajet: RM${budget} juta`;
+      document.getElementById("cityView").innerHTML = "";
+    }
 
-  if (!sizeKey) {
-    alert(lang === 'en' ? "Invalid size." : "Saiz tidak sah.");
-    return;
-  }
-
-  const cost = buildings[index].baseCost * sizes[sizeKey];
-  if (budget < cost) {
-    alert(lang === 'en' ? "Not enough budget!" : "Bajet tidak mencukupi!");
-    return;
-  }
-
-  const positionPrompt = lang === 'en'
-    ? "Choose placement: (top-left, top-right, center, bottom-left, bottom-right)"
-    : "Pilih kedudukan: (atas kiri, atas kanan, tengah, bawah kiri, bawah kanan)";
-  const placement = prompt(positionPrompt)?.toLowerCase();
-
-  if (!positions[placement]) {
-    alert(lang === 'en' ? "Invalid position." : "Kedudukan tidak sah.");
-    return;
-  }
-
-  if (usedPositions[placement]) {
-    alert(lang === 'en' ? "That spot is taken!" : "Kedudukan itu telah diisi!");
-    return;
-  }
-
-  usedPositions[placement] = true;
-  budget -= cost;
-  updateBudgetText();
-  selectedBuildings.push({ ...buildings[index], size: sizeKey, cost, position: placement });
-
-  const img = document.createElement("img");
-  img.src = buildings[index].img;
-  img.alt = buildings[index].name[lang];
-  img.className = "building-img";
-  img.style.width = sizeKey === "small" ? "40px" : sizeKey === "medium" ? "60px" : "80px";
-
-  Object.assign(img.style, positions[placement]);
-  document.getElementById("cityMap").appendChild(img);
-}
-
-function finishPlanning() {
-  const spent = 100 - budget;
-  let msg = "";
-
-  if (budget < 0) {
-    msg = lang === 'en'
-      ? "You overspent! You fail as a Quantity Surveyor."
-      : "Anda terlebih bajet! Anda gagal sebagai Juruukur Bahan.";
-  } else if (budget <= 10) {
-    msg = lang === 'en'
-      ? `You spent RM${spent} million. Efficient planning!`
-      : `Anda telah membelanjakan RM${spent} juta. Perancangan yang cekap!`;
-  } else if (budget <= 30) {
-    msg = lang === 'en'
-      ? `You spent RM${spent} million. Great planning!`
-      : `Anda telah membelanjakan RM${spent} juta. Perancangan yang hebat!`;
-  } else {
-    msg = lang === 'en'
-      ? `You only used RM${spent} million. You could build more!`
-      : `Anda hanya menggunakan RM${spent} juta. Anda boleh bina lebih banyak!`;
-  }
-
-  document.getElementById("result").innerText = msg;
-}
-
-function resetPlanning() {
-  selectedBuildings = [];
-  budget = 100;
-  usedPositions = {};
-  updateBudgetText();
-  document.getElementById("result").innerText = "";
-  document.getElementById("cityMap").innerHTML = "";
-  showBuildings();
-}
-
-// Start the game
-setLanguage("en");
-</script>
+    // Initialize on load
+    setLanguage('en');
+  </script>
 
 </body>
 </html>
