@@ -179,13 +179,13 @@
       let msg = "";
 
       if (budget < 0) {
-        msg = `💸 Uh-oh! You overspent by RM${Math.abs(budget).toFixed(1)} million. You fail as a Quantity Surveyor (っ °Д °;)っ`;
+        msg = `💸 Uh-oh (っ °Д °;)っ You overspent by RM${Math.abs(budget).toFixed(1)} million! You fail as a Quantity Surveyor ≧ ﹏ ≦`;
       } else if (budget <= 10) {
         msg = `✅ Efficient planning (*^▽^*) You spent RM${spent.toFixed(1)} million.`;
       } else if (budget <= 30) {
         msg = `👍 Great planning ( •̀ ω •́ )✧ You spent RM${spent.toFixed(1)} million.`;
       } else {
-        msg = `🧐 You only used RM${spent.toFixed(1)} million. You could build more \>O</`;
+        msg = `🧐 You only used RM${spent.toFixed(1)} million. You could build more ⚆_⚆`;
       }
 
       document.getElementById("result").innerText = msg;
