@@ -11,9 +11,11 @@
       background: #eef4f8;
       padding: 20px;
     }
+
     h1 {
       font-size: 2em;
     }
+
     .building-option {
       display: inline-block;
       margin: 10px;
@@ -23,11 +25,13 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       cursor: pointer;
     }
+
     .building-option img {
       width: 60px;
       height: 60px;
       object-fit: contain;
     }
+
     #cityView {
       background: url('https://i.imgur.com/upOHde0.png') center/cover no-repeat;
       width: 90%;
@@ -42,6 +46,7 @@
       padding: 10px;
       flex-direction: row;
     }
+
     .zone {
       flex: 1;
       min-width: 100px;
@@ -54,17 +59,42 @@
       margin: 5px;
       border-radius: 5px;
     }
+
     .building-img {
       width: 60px;
       height: 60px;
       object-fit: contain;
       margin: 5px;
     }
+
+    #peopleContainer {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      bottom: 0;
+      left: 0;
+    }
+
+    .person {
+      position: absolute;
+      width: 50px;
+      height: auto;
+      bottom: 10px;
+      animation: walk 12s linear forwards;
+    }
+
+    @keyframes walk {
+      0% { left: -60px; }
+      100% { left: 100%; }
+    }
+
     .result {
       font-weight: bold;
       font-size: 1.2em;
       margin-top: 15px;
     }
+
     button {
       padding: 10px 20px;
       margin: 10px 5px;
@@ -73,10 +103,12 @@
       border-radius: 8px;
       cursor: pointer;
     }
+
     .done {
       background-color: #4caf50;
       color: white;
     }
+
     .clear {
       background-color: #f44336;
       color: white;
@@ -115,6 +147,7 @@
     <div id="center" class="zone"></div>
     <div id="right" class="zone"></div>
     <div id="bottom" class="zone"></div>
+    <div id="peopleContainer"></div>
   </div>
 
   <button class="done" onclick="finishPlanning()">✅ Done Planning</button>
@@ -132,6 +165,13 @@
       { name: "Fire Station", cost: 25, img: "https://i.imgur.com/YKY1FXd.gif" },
       { name: "Library", cost: 15, img: "https://i.imgur.com/iOMz7mW.gif" },
       { name: "Playground", cost: 10, img: "https://i.imgur.com/uzmc9IE.gif" }
+    ];
+
+    const peopleGifs = [
+      "https://i.imgur.com/HLFW4o5.gif", // dog walking
+      "https://i.imgur.com/iIFN5Ta.gif", // elderly
+      "https://i.imgur.com/3ZaVHtm.gif", // runner
+      "https://i.imgur.com/YnaYfnM.gif"  // casual walk
     ];
 
     let selectedBuildings = [];
@@ -168,6 +208,22 @@
       zoneDiv.appendChild(img);
 
       updateBudget();
+      addPersonAnimation();
+    }
+
+    function addPersonAnimation() {
+      const peopleContainer = document.getElementById("peopleContainer");
+
+      const person = document.createElement("img");
+      const randomGif = peopleGifs[Math.floor(Math.random() * peopleGifs.length)];
+      person.src = randomGif;
+      person.className = "person";
+
+      peopleContainer.appendChild(person);
+
+      setTimeout(() => {
+        person.remove();
+      }, 12000);
     }
 
     function updateBudget() {
@@ -179,13 +235,13 @@
       let msg = "";
 
       if (budget < 0) {
-        msg = `💸 Uh-oh (っ °Д °;)っ You overspent by RM${Math.abs(budget).toFixed(1)} million! You fail as a Quantity Surveyor ≧ ﹏ ≦`;
+        msg = `💸 Uh-oh! You overspent by RM${Math.abs(budget).toFixed(1)} million. You fail as a Quantity Surveyor.`;
       } else if (budget <= 10) {
-        msg = `✅ Efficient planning (*^▽^*) You spent RM${spent.toFixed(1)} million.`;
+        msg = `✅ Efficient planning! You spent RM${spent.toFixed(1)} million.`;
       } else if (budget <= 30) {
-        msg = `👍 Great planning ( •̀ ω •́ )✧ You spent RM${spent.toFixed(1)} million.`;
+        msg = `👍 Great planning! You spent RM${spent.toFixed(1)} million.`;
       } else {
-        msg = `🧐 You only used RM${spent.toFixed(1)} million. You could build more ⚆_⚆`;
+        msg = `🧐 You only used RM${spent.toFixed(1)} million. You could build more!`;
       }
 
       document.getElementById("result").innerText = msg;
@@ -199,6 +255,9 @@
       ["top", "left", "center", "right", "bottom"].forEach(id => {
         document.getElementById(id).innerHTML = "";
       });
+
+      const peopleContainer = document.getElementById("peopleContainer");
+      peopleContainer.innerHTML = "";
     }
 
     // Initialize
