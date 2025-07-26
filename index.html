@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
       background: #eef4f8;
+      text-align: center;
       padding: 20px;
     }
 
@@ -24,6 +24,8 @@
       padding: 10px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
     }
 
     .building-option img {
@@ -38,13 +40,13 @@
       height: 400px;
       margin: 20px auto;
       border-radius: 10px;
-      position: relative;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
+      position: relative;
+      gap: 8px;
       padding: 10px;
-      flex-direction: row;
     }
 
     .zone {
@@ -56,8 +58,8 @@
       justify-content: center;
       align-items: center;
       border: 1px dashed #ccc;
-      margin: 5px;
       border-radius: 5px;
+      position: relative;
     }
 
     .building-img {
@@ -65,34 +67,40 @@
       height: 60px;
       object-fit: contain;
       margin: 5px;
+      position: relative;
     }
 
-    #peopleContainer {
+    .sparkle {
       position: absolute;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      bottom: 0;
-      left: 0;
+      animation: sparkle 0.8s ease-out;
+      background-image: radial-gradient(white, transparent 60%);
+      background-repeat: repeat;
+      background-size: 20px 20px;
+      z-index: 2;
     }
 
-    .person {
-      position: absolute;
-      width: 50px;
-      height: auto;
-      bottom: 10px;
-      animation: walk 12s linear forwards;
-    }
-
-    @keyframes walk {
-      0% { left: -60px; }
-      100% { left: 100%; }
+    @keyframes sparkle {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(2); }
     }
 
     .result {
       font-weight: bold;
       font-size: 1.2em;
       margin-top: 15px;
+    }
+
+    .done {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .clear {
+      background-color: #f44336;
+      color: white;
     }
 
     button {
@@ -104,14 +112,17 @@
       cursor: pointer;
     }
 
-    .done {
-      background-color: #4caf50;
-      color: white;
+    .person {
+      position: absolute;
+      width: 40px;
+      height: auto;
+      animation: walkZone 8s linear forwards;
+      z-index: 1;
     }
 
-    .clear {
-      background-color: #f44336;
-      color: white;
+    @keyframes walkZone {
+      0% { left: -40px; }
+      100% { left: 100%; }
     }
   </style>
 </head>
@@ -147,7 +158,6 @@
     <div id="center" class="zone"></div>
     <div id="right" class="zone"></div>
     <div id="bottom" class="zone"></div>
-    <div id="peopleContainer"></div>
   </div>
 
   <button class="done" onclick="finishPlanning()">✅ Done Planning</button>
@@ -168,10 +178,10 @@
     ];
 
     const peopleGifs = [
-      "https://i.imgur.com/HLFW4o5.gif", // dog walking
-      "https://i.imgur.com/iIFN5Ta.gif", // elderly
-      "https://i.imgur.com/3ZaVHtm.gif", // runner
-      "https://i.imgur.com/YnaYfnM.gif"  // casual walk
+      "https://i.imgur.com/HLFW4o5.gif",
+      "https://i.imgur.com/iIFN5Ta.gif",
+      "https://i.imgur.com/3ZaVHtm.gif",
+      "https://i.imgur.com/YnaYfnM.gif"
     ];
 
     let selectedBuildings = [];
@@ -184,7 +194,10 @@
         const div = document.createElement("div");
         div.className = "building-option";
         div.innerHTML = `<img src="${b.img}" /><div>${b.name}</div><div>RM${b.cost}M</div>`;
-        div.onclick = () => addBuilding(i);
+        div.onclick = () => {
+          showSparkle(div);
+          addBuilding(i);
+        };
         container.appendChild(div);
       });
     }
@@ -192,9 +205,13 @@
     function addBuilding(index) {
       const sizeMultiplier = parseFloat(document.getElementById("size").value);
       const placement = document.getElementById("zone").value;
-
       const b = buildings[index];
       const adjustedCost = b.cost * sizeMultiplier;
+
+      if (budget < adjustedCost) {
+        alert("Not enough budget!");
+        return;
+      }
 
       budget -= adjustedCost;
       selectedBuildings.push({ ...b, sizeMultiplier });
@@ -203,27 +220,13 @@
       const img = document.createElement("img");
       img.src = b.img;
       img.className = "building-img";
-      img.title = `${b.name} (${sizeMultiplier === 1 ? "M" : sizeMultiplier < 1 ? "S" : "L"}) - RM${adjustedCost.toFixed(1)}M`;
+      img.title = `${b.name} - RM${adjustedCost.toFixed(1)}M`;
       img.style.transform = `scale(${sizeMultiplier})`;
+
       zoneDiv.appendChild(img);
-
+      showSparkle(img);
+      animatePerson(zoneDiv);
       updateBudget();
-      addPersonAnimation();
-    }
-
-    function addPersonAnimation() {
-      const peopleContainer = document.getElementById("peopleContainer");
-
-      const person = document.createElement("img");
-      const randomGif = peopleGifs[Math.floor(Math.random() * peopleGifs.length)];
-      person.src = randomGif;
-      person.className = "person";
-
-      peopleContainer.appendChild(person);
-
-      setTimeout(() => {
-        person.remove();
-      }, 12000);
     }
 
     function updateBudget() {
@@ -255,15 +258,27 @@
       ["top", "left", "center", "right", "bottom"].forEach(id => {
         document.getElementById(id).innerHTML = "";
       });
-
-      const peopleContainer = document.getElementById("peopleContainer");
-      peopleContainer.innerHTML = "";
     }
 
-    // Initialize
+    function animatePerson(zone) {
+      const person = document.createElement("img");
+      const gif = peopleGifs[Math.floor(Math.random() * peopleGifs.length)];
+      person.src = gif;
+      person.className = "person";
+      zone.appendChild(person);
+      setTimeout(() => person.remove(), 8000);
+    }
+
+    function showSparkle(target) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "sparkle";
+      target.appendChild(sparkle);
+      setTimeout(() => sparkle.remove(), 800);
+    }
+
+    // Initialize game
     renderBuildings();
     updateBudget();
   </script>
-
 </body>
 </html>
