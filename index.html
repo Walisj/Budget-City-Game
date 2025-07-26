@@ -190,9 +190,7 @@
       const b = buildings[index];
       const adjustedCost = b.cost * sizeMultiplier;
 
-      if (budget < adjustedCost) {
-        alert("⚠️ You've overspent, this will be counted!");
-      }
+    
 
       budget -= adjustedCost;
       selectedBuildings.push({ ...b, sizeMultiplier });
