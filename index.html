@@ -225,22 +225,27 @@
       document.getElementById("budget").innerText = `Remaining Budget: RM${budget.toFixed(1)} million`;
     }
 
-    function finishPlanning() {
-      const spent = 100 - budget;
-      let msg = "";
+   function finishPlanning() {
+  const spent = 100 - budget;
+  let msg = "";
+  let gif = "";
 
-      if (budget < 0) {
-        msg = `💸 Uh-oh (°ロ°) You overspent by RM${Math.abs(budget).toFixed(1)} million. There's not enough budget (┬┬﹏┬┬)`;
-      } else if (budget <= 10) {
-        msg = `✅ Efficient planning! You spent RM${spent.toFixed(1)} million (*^▽^*)`;
-      } else if (budget <= 30) {
-        msg = `👍 Great planning! You spent RM${spent.toFixed(1)} million ( •̀ ω •́ )✧`;
-      } else {
-        msg = `🧐 You only used RM${spent.toFixed(1)} million. You could build more! ⚆_⚆`;
-      }
+  if (budget < 0) {
+    msg = `💸 Uh-oh! We're broke now!`;
+    gif = `<img src="https://i.imgur.com/THFsn6C.jpeg" alt="broke gif" style="width:200px;margin-top:10px;">`;
+  } else if (budget <= 10) {
+    msg = `✅ Efficient planning! You spent RM${spent.toFixed(1)} million.`;
+    gif = `<img src="https://i.imgur.com/sIO62bu.gif" alt="clapping gif" style="width:200px;margin-top:10px;">`;
+  } else if (budget <= 30) {
+    msg = `👍 Great planning! You spent RM${spent.toFixed(1)} million.`;
+    gif = `<img src="https://i.imgur.com/zjw90jV.gif" alt="thumbs up gif" style="width:200px;margin-top:10px;">`;
+  } else {
+    msg = `🧐 You only used RM${spent.toFixed(1)} million. You could build more!`;
+     gif = `<img src="https://i.imgur.com/FG8elDQ.gif" alt="moto gif" style="width:200px;margin-top:10px;">`;
+  }
 
-      document.getElementById("result").innerText = msg;
-    }
+  document.getElementById("result").innerHTML = msg + "<br>" + gif;
+}
 
     function resetPlanning() {
       selectedBuildings = [];
