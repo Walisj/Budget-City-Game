@@ -223,7 +223,7 @@
       document.getElementById("budget").innerText = `Remaining Budget: RM${budget.toFixed(1)} million`;
     }
 
-    function finishPlanning() {
+function finishPlanning() {
   const spent = 100 - budget;
   let msg = "";
   let gif = "";
@@ -247,7 +247,6 @@
     ${mostExpensive ? `<p><strong>🏗️ Most expensive building:</strong> ${mostExpensive.name} (RM${(mostExpensive.cost * mostExpensive.sizeMultiplier).toFixed(1)}M)</p>` : ""}
   `;
 
-  // ✅ UPDATED gif URLs (from .jpeg → .jpg or valid .gif)
   if (budget < 0) {
     msg = `Uh-oh (°ロ°) We're broke now!`;
     gif = `<img src="https://i.imgur.com/THFsn6C.jpg" alt="broke gif" style="width:200px;margin-top:10px;">`;
@@ -265,12 +264,6 @@
   document.getElementById("result").innerHTML = msg + "<br>" + gif + summary;
   updateLeaderboard(playerName, spent);
 }
-
-
-      document.getElementById("result").innerHTML = msg + "<br>" + gif;
-
-      updateLeaderboard(playerName, spent);
-    }
 
     function resetPlanning() {
       selectedBuildings = [];
