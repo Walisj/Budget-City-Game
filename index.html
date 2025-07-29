@@ -264,6 +264,110 @@
 
     renderBuildings();
     updateBudget();
+    <!-- Leaderboard UI -->
+<div id="leaderboardSection">
+  <h2>🏆 Leaderboard</h2>
+  <ul id="leaderboardList"></ul>
+  <button onclick="teacherLogin()">🔐 Teacher Login</button>
+</div>
+
+<script>
+  // Ask for player name on page load
+  let playerName = localStorage.getItem("playerName") || "";
+  while (!playerName) {
+    playerName = prompt("Please enter your name:").trim();
+  }
+  localStorage.setItem("playerName", playerName);
+
+  let isTeacher = false;
+
+  function teacherLogin() {
+    const pass = prompt("Enter teacher password:");
+    if (pass === "teacher123") {
+      isTeacher = true;
+      renderLeaderboard();
+      alert("Teacher access granted.");
+    } else {
+      alert("Incorrect password!");
+    }
+  }
+
+  function finishPlanning() {
+    const spent = 100 - budget;
+    let msg = "";
+    let gif = "";
+
+    if (budget < 0) {
+      msg = `Uh-oh (°ロ°) We're broke now!`;
+      gif = `<img src="https://i.imgur.com/THFsn6C.jpeg" alt="broke gif" style="width:200px;margin-top:10px;">`;
+    } else if (budget <= 10) {
+      msg = `Efficient planning! You spent RM${spent.toFixed(1)} million. (*^▽^*)`;
+      gif = `<img src="https://i.imgur.com/sIO62bu.gif" alt="clapping gif" style="width:200px;margin-top:10px;">`;
+    } else if (budget <= 30) {
+      msg = `Great planning! You spent RM${spent.toFixed(1)} million. ( •̀ ω •́ )✧`;
+      gif = `<img src="https://i.imgur.com/zjw90jV.gif" alt="thumbs up gif" style="width:200px;margin-top:10px;">`;
+    } else {
+      msg = `You only used RM${spent.toFixed(1)} million. You could build more ⚆_⚆`;
+      gif = `<img src="https://i.imgur.com/FG8elDQ.gif" alt="moto gif" style="width:200px;margin-top:10px;">`;
+    }
+
+    document.getElementById("result").innerHTML = msg + "<br>" + gif;
+
+    updateLeaderboard(playerName, spent);
+  }
+
+  function updateLeaderboard(name, spent) {
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+    const existing = leaderboard.find(p => p.name === name);
+    if (existing) {
+      existing.spent = spent;
+    } else {
+      leaderboard.push({ name, spent });
+    }
+
+    // Sort by lowest spent (best efficiency), but overspent (spent > 100) go to bottom
+    leaderboard.sort((a, b) => {
+      if (a.spent > 100 && b.spent <= 100) return 1;
+      if (a.spent <= 100 && b.spent > 100) return -1;
+      return a.spent - b.spent;
+    });
+
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+    renderLeaderboard();
+  }
+
+  function renderLeaderboard() {
+    const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+    const list = document.getElementById("leaderboardList");
+    list.innerHTML = "";
+
+    leaderboard.forEach((p, index) => {
+      const li = document.createElement("li");
+      li.innerHTML = `#${index + 1} - ${p.name}: RM${p.spent.toFixed(1)} million spent`;
+
+      if (isTeacher) {
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "❌";
+        delBtn.onclick = () => deleteEntry(p.name);
+        delBtn.style.marginLeft = "10px";
+        li.appendChild(delBtn);
+      }
+
+      list.appendChild(li);
+    });
+  }
+
+  function deleteEntry(name) {
+    let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+    leaderboard = leaderboard.filter(p => p.name !== name);
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+    renderLeaderboard();
+  }
+
+  // Initial render
+  renderLeaderboard();
+</script>
+
   </script>
 </body>
 </html>
