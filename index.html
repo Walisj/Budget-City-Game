@@ -140,6 +140,8 @@
   </div>
 
   <script>
+    renderLeaderboard(); // Ensure leaderboard always shows
+
     const buildings = [
       { name: "School", cost: 30, img: "https://i.imgur.com/D55hAJ5.gif" },
       { name: "Hospital", cost: 40, img: "https://i.imgur.com/hFGTjUw.gif" },
@@ -286,15 +288,16 @@
     }
 
     function teacherLogin() {
-      const pass = prompt("Enter teacher password:");
-      if (pass === "teacher123") {
-        isTeacher = true;
-        renderLeaderboard();
-        alert("Teacher access granted.");
-      } else {
-        alert("Incorrect password!");
-      }
-    }
+  const pass = prompt("Enter teacher password:");
+  if (pass === "teacher123") {
+    isTeacher = true;
+    alert("Access granted.");
+    renderLeaderboard(); // re-render now that isTeacher is true
+  } else {
+    alert("Incorrect password!");
+  }
+}
+
 
     function updateLeaderboard(name, spent) {
       const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
@@ -316,25 +319,42 @@
     }
 
     function renderLeaderboard() {
-      const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-      const list = document.getElementById("leaderboardList");
-      list.innerHTML = "";
+  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+  const list = document.getElementById("leaderboardList");
+  list.innerHTML = "";
 
-      leaderboard.forEach((p, index) => {
-        const li = document.createElement("li");
-        li.innerHTML = `#${index + 1} - ${p.name}: RM${p.spent.toFixed(1)} million spent`;
+  let playerRank = -1;
 
-        if (isTeacher) {
-          const delBtn = document.createElement("button");
-          delBtn.textContent = "❌";
-          delBtn.onclick = () => deleteEntry(p.name);
-          delBtn.style.marginLeft = "10px";
-          li.appendChild(delBtn);
-        }
+  leaderboard.forEach((p, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `#${index + 1} - ${p.name}: RM${p.spent.toFixed(1)} million spent`;
 
-        list.appendChild(li);
-      });
+    // highlight current player
+    if (p.name === playerName) {
+      li.style.fontWeight = "bold";
+      li.style.color = "green";
+      playerRank = index + 1;
     }
+
+    if (isTeacher) {
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "❌";
+      delBtn.onclick = () => deleteEntry(p.name);
+      delBtn.style.marginLeft = "10px";
+      li.appendChild(delBtn);
+    }
+
+    list.appendChild(li);
+  });
+
+  // Show current player's rank below the leaderboard
+  if (playerRank !== -1) {
+    const rankDisplay = document.createElement("div");
+    rankDisplay.innerHTML = `<p style="margin-top:10px;"><strong>You are ranked #${playerRank}</strong> out of ${leaderboard.length} players.</p>`;
+    list.appendChild(rankDisplay);
+  }
+}
+
 
     function deleteEntry(name) {
       let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
