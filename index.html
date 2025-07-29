@@ -147,6 +147,12 @@
   <button class="clear" onclick="resetPlanning()">🗑️ Clear My Choices</button>
 
   <div class="result" id="result"></div>
+  <div id="leaderboardSection">
+  <h2>🏆 Leaderboard</h2>
+  <ul id="leaderboardList"></ul>
+  <button onclick="teacherLogin()">🔐 Teacher Login</button>
+</div>
+
 
   <script>
     const buildings = [
@@ -225,46 +231,7 @@
       document.getElementById("budget").innerText = `Remaining Budget: RM${budget.toFixed(1)} million`;
     }
 
-   function finishPlanning() {
-  const spent = 100 - budget;
-  let msg = "";
-  let gif = "";
-
-  if (budget < 0) {
-    msg = `Uh-oh (°ロ°) We're broke now!`;
-    gif = `<img src="https://i.imgur.com/THFsn6C.jpeg" alt="broke gif" style="width:200px;margin-top:10px;">`;
-  } else if (budget <= 10) {
-    msg = `Efficient planning! You spent RM${spent.toFixed(1)} million. (*^▽^*)`;
-    gif = `<img src="https://i.imgur.com/sIO62bu.gif" alt="clapping gif" style="width:200px;margin-top:10px;">`;
-  } else if (budget <= 30) {
-    msg = `Great planning! You spent RM${spent.toFixed(1)} million. ( •̀ ω •́ )✧`;
-    gif = `<img src="https://i.imgur.com/zjw90jV.gif" alt="thumbs up gif" style="width:200px;margin-top:10px;">`;
-  } else {
-    msg = `You only used RM${spent.toFixed(1)} million. You could build more ⚆_⚆`;
-     gif = `<img src="https://i.imgur.com/FG8elDQ.gif" alt="moto gif" style="width:200px;margin-top:10px;">`;
-  }
-
-  document.getElementById("result").innerHTML = msg + "<br>" + gif;
-}
-
-    function resetPlanning() {
-      selectedBuildings = [];
-      budget = 100;
-      document.getElementById("result").innerText = "";
-      updateBudget();
-      document.getElementById("cityView").innerHTML = "";
-    }
-
-    function showSparkle(target) {
-      const sparkle = document.createElement("div");
-      sparkle.className = "sparkle";
-      target.appendChild(sparkle);
-      setTimeout(() => sparkle.remove(), 800);
-    }
-
-    renderBuildings();
-    updateBudget();
-    <!-- Leaderboard UI -->
+   <!-- Leaderboard UI -->
 <div id="leaderboardSection">
   <h2>🏆 Leaderboard</h2>
   <ul id="leaderboardList"></ul>
@@ -368,6 +335,7 @@
   renderLeaderboard();
 </script>
 
-  </script>
+
+   
 </body>
 </html>
