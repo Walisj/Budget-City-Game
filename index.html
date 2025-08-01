@@ -7,358 +7,171 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #eef4f8;
+      background: #f0f4f8;
       text-align: center;
       padding: 20px;
     }
-
     h1 {
       font-size: 2em;
+      margin-bottom: 0;
     }
-
-    .building-option {
-      display: inline-block;
+    .building-btn {
+      padding: 10px 20px;
       margin: 10px;
-      background: white;
       border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: none;
+      background: #4caf50;
+      color: white;
       cursor: pointer;
+    }
+    .building-btn:hover {
+      background: #45a049;
+    }
+    #city {
+      margin-top: 30px;
       position: relative;
-      overflow: hidden;
-    }
-
-    .building-option img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-    }
-
-    #cityView {
-      background: url('https://i.imgur.com/upOHde0.png') center/cover no-repeat;
-      width: 90%;
       height: 400px;
-      margin: 20px auto;
-      border-radius: 10px;
-      position: relative;
-      overflow: hidden;
+      border: 2px dashed #888;
+      background: #d8f3dc;
     }
-
-    .building-img {
+    .building {
+      position: absolute;
       width: 60px;
       height: 60px;
-      object-fit: contain;
-      position: absolute;
+      transition: transform 0.5s ease;
     }
-
     .sparkle {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      width: 30px;
+      height: 30px;
       pointer-events: none;
-      animation: sparkle 0.8s ease-out;
-      background-image: radial-gradient(white, transparent 60%);
-      background-repeat: repeat;
-      background-size: 20px 20px;
-      z-index: 2;
+      animation: sparkleMove 4s linear infinite;
     }
-
-    @keyframes sparkle {
-      0% { opacity: 1; transform: scale(1); }
-      100% { opacity: 0; transform: scale(2); }
+    @keyframes sparkleMove {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-100px); opacity: 0; }
     }
-
-    .result {
-      font-weight: bold;
-      font-size: 1.2em;
-      margin-top: 15px;
-    }
-
-    .done {
-      background-color: #4caf50;
-      color: white;
-    }
-
-    .clear {
-      background-color: #f44336;
-      color: white;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin: 10px 5px;
+    #summary {
+      margin-top: 20px;
       font-size: 1em;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      color: #444;
     }
-
-    .person {
-      position: absolute;
-      width: 40px;
-      height: auto;
-      animation: roam 12s linear infinite;
+    #leaderboard {
+      margin-top: 30px;
+      border-top: 2px solid #ccc;
+      padding-top: 10px;
     }
-
-    @keyframes roam {
-      0%   { transform: translate(0, 0); }
-      25%  { transform: translate(100px, 30px); }
-      50%  { transform: translate(200px, 60px); }
-      75%  { transform: translate(100px, 90px); }
-      100% { transform: translate(0, 0); }
+    #leaderboardTable {
+      margin: auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+    #leaderboardTable th, #leaderboardTable td {
+      border: 1px solid #999;
+      padding: 8px;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: red;
+    }
+    .funny-gif {
+      width: 150px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
   <h1>Build Your Budget City</h1>
-  <p>You have RM100 million. Choose wisely to develop your city!</p>
-  <div id="budget">Remaining Budget: RM100 million</div>
+  <p>Budget: RM<span id="budget">100</span> million</p>
 
-  <div id="buildingChoices"></div>
+  <div>
+    <button class="building-btn" onclick="build('Hospital', 30, 'https://drive.google.com/uc?export=download&id=1UFdy-fCiPliRnsbuBDKzP4JhpjIMZajD')">Hospital (RM30M)</button>
+    <button class="building-btn" onclick="build('Mall', 25, 'https://drive.google.com/uc?export=download&id=1Oy94c0BvSCrpO8fdhrV-P1zRDBKOlCe2')">Mall (RM25M)</button>
+    <button class="building-btn" onclick="build('Park', 15, 'https://drive.google.com/uc?export=download&id=1BfYWH5vEtb7ZEHrY21DoEm1j3kEGGT7I')">Park (RM15M)</button>
+    <button class="building-btn" onclick="build('Police', 20, 'https://drive.google.com/uc?export=download&id=1trVBPh9Obf5fyS-rhgf-Dm2vgFfuI14r')">Police (RM20M)</button>
+    <button class="building-btn" onclick="build('School', 10, 'https://drive.google.com/uc?export=download&id=123o4Z0JEHZ7RY0Ck-QS096_LNR1PaVHW')">School (RM10M)</button>
+  </div>
 
-  <p>
-    <label for="size">Choose Size: </label>
-    <select id="size">
-      <option value="1">Medium (Normal Cost)</option>
-      <option value="0.75">Small (Cheaper)</option>
-      <option value="1.25">Large (Expensive)</option>
-    </select>
-  </p>
+  <div id="city"></div>
 
-  <div id="cityView"></div>
+  <div id="message"></div>
+  <div id="summary"></div>
 
-  <button class="done" onclick="finishPlanning()">✅ Done Planning</button>
-  <button class="clear" onclick="resetPlanning()">🗑️ Clear My Choices</button>
-
-  <div class="result" id="result"></div>
-
-  <div id="leaderboardSection">
-    <h2>🏆 Leaderboard</h2>
-    <ul id="leaderboardList"></ul>
-    <button onclick="teacherLogin()">🔐 Teacher Login</button>
+  <div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <table id="leaderboardTable">
+      <thead>
+        <tr><th>Player</th><th>Total Spent (RM)</th></tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
   </div>
 
   <script>
-    renderLeaderboard(); // Ensure leaderboard always shows
-
-    const buildings = [
-      { name: "School", cost: 30, img: "https://i.imgur.com/D55hAJ5.gif" },
-      { name: "Hospital", cost: 40, img: "https://i.imgur.com/hFGTjUw.gif" },
-      { name: "Park", cost: 10, img: "https://i.imgur.com/aopODtG.png" },
-      { name: "Mall", cost: 35, img: "https://i.imgur.com/MbExT3H.png" },
-      { name: "Police Station", cost: 20, img: "https://i.imgur.com/SWMbTes.png" },
-      { name: "Fire Station", cost: 25, img: "https://i.imgur.com/YKY1FXd.gif" },
-      { name: "Library", cost: 15, img: "https://i.imgur.com/iOMz7mW.gif" },
-      { name: "Playground", cost: 10, img: "https://i.imgur.com/uzmc9IE.gif" }
-    ];
-
-    const peopleGifs = [
-      "https://i.imgur.com/HLFW4o5.gif",
-      "https://i.imgur.com/iIFN5Ta.gif",
-      "https://i.imgur.com/3ZaVHtm.gif",
-      "https://i.imgur.com/YnaYfnM.gif"
-    ];
-
-    let selectedBuildings = [];
     let budget = 100;
-    let isTeacher = false;
+    let buildings = [];
+    let playerName = prompt("Enter your name:");
+    let spent = 0;
 
-    // Ask for player name
-    let playerName = localStorage.getItem("playerName") || "";
-    while (!playerName) {
-      playerName = prompt("Please enter your name:").trim();
-    }
-    localStorage.setItem("playerName", playerName);
-
-    function renderBuildings() {
-      const container = document.getElementById("buildingChoices");
-      container.innerHTML = "";
-      buildings.forEach((b, i) => {
-        const div = document.createElement("div");
-        div.className = "building-option";
-        div.innerHTML = `<img src="${b.img}" /><div>${b.name}</div><div>RM${b.cost}M</div>`;
-        div.onclick = () => {
-          showSparkle(div);
-          addBuilding(i);
-        };
-        container.appendChild(div);
-      });
-    }
-
-    function addBuilding(index) {
-      const sizeMultiplier = parseFloat(document.getElementById("size").value);
-      const b = buildings[index];
-      const adjustedCost = b.cost * sizeMultiplier;
-
-      budget -= adjustedCost;
-      selectedBuildings.push({ ...b, sizeMultiplier });
-
-      const city = document.getElementById("cityView");
-      const img = document.createElement("img");
-      img.src = b.img;
-      img.className = "building-img";
-      img.title = `${b.name} - RM${adjustedCost.toFixed(1)}M`;
-      img.style.transform = `scale(${sizeMultiplier})`;
-      img.style.left = `${Math.random() * 80 + 10}%`;
-      img.style.top = `${Math.random() * 80 + 10}%`;
-
-      city.appendChild(img);
-      showSparkle(img);
-      spawnRoamingPerson();
-      updateBudget();
-    }
-
-    function spawnRoamingPerson() {
-      const person = document.createElement("img");
-      const gif = peopleGifs[Math.floor(Math.random() * peopleGifs.length)];
-      person.src = gif;
-      person.className = "person";
-      person.style.left = `${Math.random() * 80}%`;
-      person.style.top = `${Math.random() * 80}%`;
-      document.getElementById("cityView").appendChild(person);
-    }
-
-    function updateBudget() {
-      document.getElementById("budget").innerText = `Remaining Budget: RM${budget.toFixed(1)} million`;
-    }
-
-function finishPlanning() {
-  const spent = 100 - budget;
-  let msg = "";
-  let gif = "";
-
-  let mostExpensive = selectedBuildings.length > 0
-    ? selectedBuildings.reduce((a, b) => (a.cost * a.sizeMultiplier > b.cost * b.sizeMultiplier ? a : b))
-    : null;
-
-  let planningStyle = "";
-  if (budget < 0) planningStyle = "Overspent 💸";
-  else if (budget <= 10) planningStyle = "Very efficient 💯";
-  else if (budget <= 30) planningStyle = "Balanced 👍";
-  else planningStyle = "Conservative 🐢";
-
-  const summary = `
-    <hr>
-    <h3>📝 Planning Summary</h3>
-    <p><strong>🧱 Total buildings placed:</strong> ${selectedBuildings.length}</p>
-    <p><strong>💸 Total spent:</strong> RM${spent.toFixed(1)} million</p>
-    <p><strong>🔎 Planning style:</strong> ${planningStyle}</p>
-    ${mostExpensive ? `<p><strong>🏗️ Most expensive building:</strong> ${mostExpensive.name} (RM${(mostExpensive.cost * mostExpensive.sizeMultiplier).toFixed(1)}M)</p>` : ""}
-  `;
-
-  if (budget < 0) {
-    msg = `Uh-oh (°ロ°) We're broke now!`;
-    gif = `<img src="https://i.imgur.com/THFsn6C.jpg" alt="broke gif" style="width:200px;margin-top:10px;">`;
-  } else if (budget <= 10) {
-    msg = `Efficient planning! You spent RM${spent.toFixed(1)} million. (*^▽^*)`;
-    gif = `<img src="https://i.imgur.com/sIO62bu.gif" alt="clapping gif" style="width:200px;margin-top:10px;">`;
-  } else if (budget <= 30) {
-    msg = `Great planning! You spent RM${spent.toFixed(1)} million. ( •̀ ω •́ )✧`;
-    gif = `<img src="https://i.imgur.com/zjw90jV.gif" alt="thumbs up gif" style="width:200px;margin-top:10px;">`;
-  } else {
-    msg = `You only used RM${spent.toFixed(1)} million. You could build more ⚆_⚆`;
-    gif = `<img src="https://i.imgur.com/FG8elDQ.gif" alt="moto gif" style="width:200px;margin-top:10px;">`;
-  }
-
-  document.getElementById("result").innerHTML = msg + "<br>" + gif + summary;
-  updateLeaderboard(playerName, spent);
-}
-
-    function resetPlanning() {
-      selectedBuildings = [];
-      budget = 100;
-      document.getElementById("result").innerText = "";
-      updateBudget();
-      document.getElementById("cityView").innerHTML = "";
-    }
-
-    function showSparkle(target) {
-      const sparkle = document.createElement("div");
-      sparkle.className = "sparkle";
-      target.appendChild(sparkle);
-      setTimeout(() => sparkle.remove(), 800);
-    }
-
-    function teacherLogin() {
-  const pass = prompt("Enter teacher password:");
-  if (pass === "teacher123") {
-    isTeacher = true;
-    alert("Access granted.");
-    renderLeaderboard(); // re-render now that isTeacher is true
-  } else {
-    alert("Incorrect password!");
-  }
-}
-
-
-    function updateLeaderboard(name, spent) {
-      const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-      const existing = leaderboard.find(p => p.name === name);
-      if (existing) {
-        existing.spent = spent;
-      } else {
-        leaderboard.push({ name, spent });
+    function build(name, cost, imageUrl) {
+      if (budget < cost) {
+        document.getElementById("message").innerHTML = "Uh oh! You're broke now 😅<br><img src='https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif' class='funny-gif'>";
+        return;
       }
 
-      leaderboard.sort((a, b) => {
-        if (a.spent > 100 && b.spent <= 100) return 1;
-        if (a.spent <= 100 && b.spent > 100) return -1;
-        return a.spent - b.spent;
+      budget -= cost;
+      spent += cost;
+      buildings.push(name);
+      document.getElementById("budget").innerText = budget;
+
+      // Add image to map randomly
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.classList.add("building");
+      img.style.top = Math.random() * 340 + "px";
+      img.style.left = Math.random() * 90 + "%";
+      document.getElementById("city").appendChild(img);
+
+      // Add sparkle
+      const sparkle = document.createElement("img");
+      sparkle.src = "https://media.giphy.com/media/l4pTfx2qLszoacZRS/giphy.gif";
+      sparkle.className = "sparkle";
+      sparkle.style.left = Math.random() * 90 + "%";
+      sparkle.style.top = Math.random() * 340 + "px";
+      document.getElementById("city").appendChild(sparkle);
+
+      // Summary update
+      let summaryMsg = `You've built: ${buildings.join(", ")}.<br>`;
+      if (budget === 0) summaryMsg += "Perfect planning!";
+      else if (budget < 20) summaryMsg += "That was tight budgeting!";
+      else summaryMsg += "You still have funds. Could’ve added more?";
+      document.getElementById("summary").innerHTML = summaryMsg;
+
+      updateLeaderboard();
+    }
+
+    function updateLeaderboard() {
+      let stored = JSON.parse(localStorage.getItem("leaderboard")) || [];
+      const existing = stored.find(entry => entry.name === playerName);
+      if (existing) existing.spent = spent;
+      else stored.push({ name: playerName, spent: spent });
+
+      stored.sort((a, b) => a.spent - b.spent);
+      localStorage.setItem("leaderboard", JSON.stringify(stored));
+
+      const tbody = document.getElementById("leaderboardBody");
+      tbody.innerHTML = "";
+      stored.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${entry.name}</td><td>${entry.spent}M</td>`;
+        tbody.appendChild(row);
       });
-
-      localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-      renderLeaderboard();
     }
 
-    function renderLeaderboard() {
-  const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  const list = document.getElementById("leaderboardList");
-  list.innerHTML = "";
-
-  let playerRank = -1;
-
-  leaderboard.forEach((p, index) => {
-    const li = document.createElement("li");
-    li.innerHTML = `#${index + 1} - ${p.name}: RM${p.spent.toFixed(1)} million spent`;
-
-    // highlight current player
-    if (p.name === playerName) {
-      li.style.fontWeight = "bold";
-      li.style.color = "green";
-      playerRank = index + 1;
-    }
-
-    if (isTeacher) {
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "❌";
-      delBtn.onclick = () => deleteEntry(p.name);
-      delBtn.style.marginLeft = "10px";
-      li.appendChild(delBtn);
-    }
-
-    list.appendChild(li);
-  });
-
-  // Show current player's rank below the leaderboard
-  if (playerRank !== -1) {
-    const rankDisplay = document.createElement("div");
-    rankDisplay.innerHTML = `<p style="margin-top:10px;"><strong>You are ranked #${playerRank}</strong> out of ${leaderboard.length} players.</p>`;
-    list.appendChild(rankDisplay);
-  }
-}
-
-
-    function deleteEntry(name) {
-      let leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-      leaderboard = leaderboard.filter(p => p.name !== name);
-      localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-      renderLeaderboard();
-    }
-
-    renderBuildings();
-    updateBudget();
-  
+    window.onload = updateLeaderboard;
   </script>
 </body>
 </html>
